@@ -22,12 +22,15 @@ Se possível o desafio pode ter as seguintes funcionalidades bônus:
 * Testes para validar a API solicitada pelo desafio.
 
 Data inicial do desafio: 18/03/2020
+
 Data final   do desafio: 25/03/2020
 
 Linguagem utilizada para codificar a build solicitada pelo desafio: RUST
+
 Motivo: Encontrei um tutorial bacana que explica sobre o uso dessa linguagem
+
 Link: https://doc.rust-lang.org/rust-by-example/
 
-Base de dados: Não definida, mas o RUST permite utilizar APIs para manuseio direto de arquivos. Provavelmente irei utilizar formato de arquivo proprietário ou TLV.
+Base de dados: Não definida, mas o RUST permite utilizar APIs para manuseio direto de arquivos e talvez permita criar formato de dados proprietário.
 
 
