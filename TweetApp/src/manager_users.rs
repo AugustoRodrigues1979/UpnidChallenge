@@ -2,6 +2,7 @@
 extern crate clap;
 
 use crate::routines::len_vec_str;
+use crate::routines::vec_str_to_string;
 use crate::database::*;
 
 use std::string::ToString;
@@ -14,26 +15,25 @@ pub enum CodeManagerUser {
 }
 
 pub fn create_user(cmd : &clap::ArgMatches) -> CodeManagerUser
-{
-    let name: Vec<&str> = cmd.values_of("UserName").unwrap().collect();
-
-    let login: Vec<&str> = cmd.values_of("UserLogin").unwrap().collect();
-
-    let password: Vec<&str> = cmd.values_of("UserPassword").unwrap().collect();
-    
+{    
     let mut result : self::CodeManagerUser = CodeManagerUser::CodeOk;
-  
-    if len_vec_str(name) == 0
+    let ref name: Vec<&str> = cmd.values_of("UserName").unwrap().collect();
+
+    let ref login: Vec<&str> = cmd.values_of("UserLogin").unwrap().collect();
+
+    let ref password: Vec<&str> = cmd.values_of("UserPassword").unwrap().collect();
+
+    if len_vec_str(name.to_vec()) == 0
     {
         println!("\nInvalid UserName\n");
         result = CodeManagerUser::InvalidUserName;
     }
-    else if len_vec_str(login) == 0 
+    else if len_vec_str(login.to_vec()) == 0 
     {
         println!("\nInvalid UserLogin\n");
         result = CodeManagerUser::InvalidLogin;
     }
-    else if len_vec_str(password) == 0  
+    else if len_vec_str(password.to_vec()) == 0  
     {
         println!("\nInvalid UserPassword\n");
         result = CodeManagerUser::InvalidPassword;
@@ -41,14 +41,12 @@ pub fn create_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if let CodeManagerUser::CodeOk = result {
         //Code for include user data in file here..
-        let a : String = "vec_str_to_string(name)".to_owned();
-        let b : String = "vec_str_to_string(name)".to_owned();
-        let c : String = "vec_str_to_string(name)".to_owned();
-
-        let mut userInfo = UserData { name:a, login:b, password:c };
+        let mut userInfo = UserData { name :vec_str_to_string(name.to_vec()), 
+                                      login:vec_str_to_string(login.to_vec()), 
+                                      password:vec_str_to_string(password.to_vec()) };
 
         println!("\nUserName 1 :{}\n", userInfo.name);
-
+        create_database();
         add_user(&mut userInfo);
         println!("\nUser created with success!\n");
     }

@@ -13,15 +13,7 @@ use crate::database::create_database;
 
 fn main()
 {
-    println!("Begin.....\n");
-    create_database();
-
-    //main1();
-}
-
-
-fn main1() {
-    let matches = App::new("TweetApp")
+    let mut matches = App::new("TweetApp")
         .version("1.0")
         .author("Augusto Rodrigues <augusto_mr@yahoo.com.br>")
         .about("Upnid Challenges")
@@ -66,7 +58,7 @@ fn main1() {
         )
         .get_matches();
 
-    if let Some(_matches) = matches.subcommand_matches("createUser")
+    if let Some(matches) = matches.subcommand_matches("createUser")
     {
         manager_users::create_user(&matches);
 	}
