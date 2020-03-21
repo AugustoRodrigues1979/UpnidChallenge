@@ -1,5 +1,7 @@
 //main of the app
 extern crate clap;
+extern crate mysql;
+
 
 mod routines;
 mod manager_users;
@@ -12,9 +14,9 @@ use crate::database::create_database;
 fn main()
 {
     println!("Begin.....\n");
-    //create_database();
+    create_database();
 
-    main1();
+    //main1();
 }
 
 
