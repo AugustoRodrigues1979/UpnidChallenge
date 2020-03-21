@@ -36,7 +36,6 @@ pub fn create_database() {
 						FOREIGN KEY (user_id)
 							REFERENCES USER_TABLE(user_id)
 					)",()).unwrap();
-					*/
 }
 
 pub fn add_user( userInfo : &mut UserData) {
