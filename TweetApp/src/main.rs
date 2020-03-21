@@ -3,10 +3,22 @@ extern crate clap;
 
 mod routines;
 mod manager_users;
+mod database;
 
 use clap::{Arg, App};
+use crate::database::create_database;
 
-fn main() {
+
+fn main()
+{
+    println!("Begin.....\n");
+    //create_database();
+
+    main1();
+}
+
+
+fn main1() {
     let matches = App::new("TweetApp")
         .version("1.0")
         .author("Augusto Rodrigues <augusto_mr@yahoo.com.br>")
