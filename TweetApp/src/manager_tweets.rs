@@ -1,47 +1,60 @@
-//module responsible for manager all tweets contents
+//module responsible for manager all data the tweet user
 extern crate clap;
 
-mod routines;
+use crate::routines::len_vec_str;
+use crate::routines::vec_str_to_string;
+use crate::database::create_database;
+use crate::database::add_tweet_user;
 
-use clap::{Arg, App, SubCommand};
+use crate::database::TweetUserData;
 
-mod manager_users {
-    fn create_user(cmd : &clap::ArgMatches)
-    {
-        let name: Vec<&str> = cmd.values_of("UserName").unwrap().collect();
+use std::string::ToString;
 
-        let login: Vec<&str> = cmd.values_of("UserLogin").unwrap().collect();
-
-        let password: Vec<&str> = cmd.values_of("UserPassword").unwrap().collect();
-    
-        let mut checkUserInfo : bool = false;
-  
-        if len_vec_str(name) == 0
-        {
-            println!("\nInvalid UserName\n");
-        }
-        else if len_vec_str(login) == 0 
-        {
-            println!("\nInvalid UserLogin\n");
-        }
-        else if len_vec_str(password) == 0  
-        {
-            println!("\nInvalid UserPassword\n");
-        }
-        else
-        {
-            checkUserInfo = true;
-        }
-  
-        if checkUserInfo 
-        {
-            //Code for include user data in file here..
-            println!("\nUser created with success!\n");
-        }
-        else 
-        {
-            println!("\nUser don't created with success!\n");
-        }
-    }
+pub enum CodeManagerTweet {
+    CodeOk,
+    InvalidTweetData,
+    InvalidLogin,
+    InvalidPassword
 }
 
+pub fn create_tweet_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
+{    
+    let mut result : self::CodeManagerTweet = CodeManagerTweet::CodeOk;
+    let ref tweetdata: Vec<&str> = cmd.values_of("TweetText").unwrap().collect()  ;
+
+    let ref login: Vec<&str> = cmd.values_of("UserLogin").unwrap().collect();
+
+    let ref password: Vec<&str> = cmd.values_of("UserPassword").unwrap().collect();
+
+    if len_vec_str(tweetdata.to_vec()) == 0
+    {
+        println!("\nInvalid Tweet's Contents\n");
+        result = CodeManagerTweet::InvalidTweetData;
+    }
+    else if len_vec_str(login.to_vec()) == 0 
+    {
+        println!("\nInvalid UserLogin\n");
+        result = CodeManagerTweet::InvalidLogin;
+    }
+    else if len_vec_str(password.to_vec()) == 0  
+    {
+        println!("\nInvalid UserPassword\n");
+        result = CodeManagerTweet::InvalidPassword;
+    }
+
+    if let CodeManagerTweet::CodeOk = result {
+        //Code for include tweet user data in file here..
+        let mut tweetInfo = TweetUserData {tweet:vec_str_to_string(tweetdata.to_vec()), 
+                                           login:vec_str_to_string(login.to_vec()), 
+                                           password:vec_str_to_string(password.to_vec()) };
+
+        create_database();
+        add_tweet_user(&mut tweetInfo);
+    }
+    else 
+    {
+        println!("\nTweet User don't created with success!\n");
+    }
+
+    return result;
+}

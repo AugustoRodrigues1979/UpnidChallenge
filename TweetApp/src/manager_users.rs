@@ -3,9 +3,11 @@ extern crate clap;
 
 use crate::routines::len_vec_str;
 use crate::routines::vec_str_to_string;
-use crate::database::*;
-
+use crate::database::create_database;
+use crate::database::add_user;
 use std::string::ToString;
+
+use crate::database::UserData;
 
 pub enum CodeManagerUser {
     CodeOk,

@@ -5,11 +5,10 @@ extern crate mysql;
 
 mod routines;
 mod manager_users;
+mod manager_tweets;
 mod database;
 
 use clap::{Arg, App};
-use crate::database::create_database;
-
 
 fn main()
 {
@@ -62,9 +61,9 @@ fn main()
     {
         manager_users::create_user(&matches);
 	}
-    else if let Some(_matches) = matches.subcommand_matches("createUserTweet")
+    else if let Some(matches) = matches.subcommand_matches("createUserTweet")
     {
-        println!("SubCommand createUserTweet not implemented!");     
+        manager_tweets::create_tweet_user(&matches);
 	}
     else if let Some(_matches) = matches.subcommand_matches("showAllUserTweet")
     {
