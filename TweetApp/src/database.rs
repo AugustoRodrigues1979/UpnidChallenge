@@ -20,6 +20,13 @@ pub struct TweetUserData {
 	pub password : String
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct TweetDataRecord {
+	pub user_id : i32,
+	pub tweet_id: i32,
+	pub tweet_data: String
+}
+
 // public methods
 pub fn create_database() {
 	//TODO: Code here all initialization for mysql
@@ -117,6 +124,74 @@ fn create_pool() -> mysql::Pool
 	return pool;
 }
 
+fn get_one_tweet( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>)
+{
+	let pool = create_pool();
+	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data
+	                                    FROM TWEET_TABLE
+									    WHERE user_id = '".to_owned();
+	stmt_str.push_str(&user_id.to_string());
+	stmt_str.push_str("' AND tweet_id = '");
+	stmt_str.push_str(&tweet_id.to_string());
+	stmt_str.push_str("'");
+
+	println!("Statement query by user id with tweet_id:{}", stmt_str);
+
+	let mut list_tweets = vec![];
+
+	let mut stmt = match pool.prepare(stmt_str)
+	{
+        Ok(stmt) => stmt,
+        Err(e) => {
+            eprintln!("{}", e);
+            return (false, list_tweets);
+        }
+    };
+
+    for row in stmt.execute(()).unwrap() {
+        let (user_info,tweet_info, tweet_body) = mysql::from_row::<(i32,i32,String)>(row.unwrap());
+
+		list_tweets.push(TweetDataRecord{user_id    : user_info ,
+										 tweet_id   : tweet_info,
+										 tweet_data : tweet_body});
+    }
+
+	(list_tweets.is_empty(), list_tweets)
+}
+
+fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
+{
+	let pool = create_pool();
+	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data
+	                                    FROM TWEET_TABLE
+									    WHERE user_id = '".to_owned();
+	stmt_str.push_str(&user_id.to_string());
+	stmt_str.push_str("'");
+
+	println!("Statement query user id:{}", stmt_str);
+
+	let mut list_tweets = vec![];
+
+	let mut stmt = match pool.prepare(stmt_str)
+	{
+        Ok(stmt) => stmt,
+        Err(e) => {
+            eprintln!("{}", e);
+            return (false, list_tweets);
+        }
+    };
+
+    for row in stmt.execute(()).unwrap() {
+        let (user_info,tweet_info, tweet_body) = mysql::from_row::<(i32,i32,String)>(row.unwrap());
+
+		list_tweets.push(TweetDataRecord{user_id    : user_info ,
+										 tweet_id   : tweet_info,
+										 tweet_data : tweet_body});
+    }
+
+	(true, list_tweets)
+}
+
 fn search_user_id( login : &String, password : &String ) -> (bool, i32)
 {
 	let pool = create_pool();
@@ -175,4 +250,45 @@ fn search_user_login( login : &String ) -> bool
     }
 	
 	return false;
+}
+
+pub fn get_all_tweets_by_user( tweetInfo : &mut TweetUserData) -> (bool, Vec<TweetDataRecord>)
+{
+    let mut user_id : &i32 = &0;
+	let mut list_tweets_bk = vec![];
+
+	let (mut status_bk, user_id) = search_user_id (&tweetInfo.login, 
+	                                           &tweetInfo.password);
+	
+	println!("\nstatus_bk 1:{}\n", status_bk);  
+	
+	if status_bk
+	{
+		let (mut status,  mut list_tweets ) = get_tweets_by_user_id( user_id );
+		list_tweets_bk.append(&mut list_tweets);
+		status_bk = status;
+		println!("\nstatus 1:{}\n", status);
+		println!("\nstatus_bk 2:{}\n", status_bk);
+	}
+	
+	println!("\nstatus_bk 3:{}\n", status_bk);
+
+	return (status_bk, list_tweets_bk);
+}
+
+pub fn get_tweet_by_id( tweetInfo : &mut TweetUserData, tweet_id: i32) -> (bool, Vec<TweetDataRecord>)
+{
+    let mut user_id : &i32 = &0;
+	let mut list_tweets_bk = vec![];
+
+	let (mut status_bk, user_id) = search_user_id (&tweetInfo.login, 
+											   &tweetInfo.password);
+	if status_bk
+	{
+		let (mut status,  mut list_tweets ) = get_one_tweet( user_id, tweet_id  );
+		list_tweets_bk.append(&mut list_tweets);
+		status_bk = status;
+	}
+	
+	return (status_bk, list_tweets_bk);
 }

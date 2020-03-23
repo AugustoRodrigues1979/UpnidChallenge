@@ -65,14 +65,18 @@ fn main()
     {
         manager_tweets::create_tweet_user(&matches);
 	}
-    else if let Some(_matches) = matches.subcommand_matches("showAllUserTweet")
+    else if let Some(matches) = matches.subcommand_matches("showAllUserTweet")
     {
-        println!("SubCommand showAllUserTweet not implemented!");
+        manager_tweets::show_all_tweets_by_user(&matches);
 	}
-    else if let Some(_matches) = matches.subcommand_matches("viewUserTweet")
+    else if let Some(matches) = matches.subcommand_matches("viewUserTweet")
     {
+        manager_tweets::viewUserTweet(&matches);
         println!("SubCommand viewUserTweet not implemented!");
     }
-    else { println!("Invalid Arguments!"); }
+    else
+    { 
+        println!("Invalid Arguments!"); 
+    }
 }
 

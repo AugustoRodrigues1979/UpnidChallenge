@@ -13,6 +13,15 @@ pub fn len_vec_str(input_vec : Vec<&str>) -> usize
 	return out.chars().count();
 }
 
+pub fn vec_str_to_i32(input_vec : Vec<&str>) -> i32
+{
+	let mut out = String::new();
+
+	out.push_str(&vec_str_to_string(input_vec));
+
+	return out.parse::<i32>().unwrap();
+}
+
 pub fn vec_str_to_string(input_vec : Vec<&str>) -> String
 {
 	let mut out = String::new();
