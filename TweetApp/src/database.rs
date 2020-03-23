@@ -156,7 +156,7 @@ fn get_one_tweet( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>
 										 tweet_data : tweet_body});
     }
 
-	(list_tweets.is_empty(), list_tweets)
+	(list_tweets.is_empty() == false, list_tweets)
 }
 
 fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
@@ -282,7 +282,7 @@ pub fn get_tweet_by_id( tweetInfo : &mut TweetUserData, tweet_id: i32) -> (bool,
 	let mut list_tweets_bk = vec![];
 
 	let (mut status_bk, user_id) = search_user_id (&tweetInfo.login, 
-											   &tweetInfo.password);
+											       &tweetInfo.password);
 	if status_bk
 	{
 		let (mut status,  mut list_tweets ) = get_one_tweet( user_id, tweet_id  );

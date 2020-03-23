@@ -72,7 +72,6 @@ fn main()
     else if let Some(matches) = matches.subcommand_matches("viewUserTweet")
     {
         manager_tweets::viewUserTweet(&matches);
-        println!("SubCommand viewUserTweet not implemented!");
     }
     else
     { 
