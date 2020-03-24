@@ -9,6 +9,10 @@ use crate::database::create_database;
 use crate::database::add_tweet_user;
 use crate::database::get_all_tweets_by_user;
 use crate::database::get_tweet_by_id;
+use crate::database::insert_like_tweet;
+use crate::database::remove_like_tweet;
+use crate::database::get_any_tweet;
+use crate::database::get_user_id;
 
 use crate::database::TweetUserData;
 
@@ -50,11 +54,11 @@ pub fn create_tweet_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
     if let CodeManagerTweet::CodeOk = result 
     {
         //Code for include tweet user data in file here..
-        let mut tweetInfo = TweetUserData {tweet:vec_str_to_string(tweetdata.to_vec()), 
+        let mut tweet_info = TweetUserData {tweet:vec_str_to_string(tweetdata.to_vec()), 
                                            login:vec_str_to_string(login.to_vec()), 
                                            password:vec_str_to_string(password.to_vec()) };
         create_database();
-        add_tweet_user(&mut tweetInfo);
+        add_tweet_user(&mut tweet_info);
     }
     else 
     {
@@ -64,7 +68,7 @@ pub fn create_tweet_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
     return result;
 }
 
-pub fn viewUserTweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
+pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
 {
     let mut result : self::CodeManagerTweet = CodeManagerTweet::CodeOk;
 
@@ -89,14 +93,14 @@ pub fn viewUserTweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if let CodeManagerTweet::CodeOk = result 
     {
-        let mut tweetInfo = TweetUserData {tweet:"".to_string(), 
+        let mut tweet_info = TweetUserData {tweet:"".to_string(), 
                                            login:vec_str_to_string(login.to_vec()), 
                                            password:vec_str_to_string(password.to_vec()) };
         create_database();
         
         let tweet_id_i32 = vec_str_to_i32(tweet_id.to_vec());
 
-        let (status, mut list_tweets) = get_tweet_by_id(&mut tweetInfo, 
+        let (status, list_tweets) = get_tweet_by_id(&mut tweet_info, 
                                                         tweet_id_i32);
         
         if status 
@@ -110,7 +114,7 @@ pub fn viewUserTweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
         }
         else 
         { 
-            println!("Not found tweets for user specified\n"); 
+            println!("\nNot found tweets for user specified\n"); 
         }
     }
     else
@@ -140,12 +144,12 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if let CodeManagerTweet::CodeOk = result 
     {
-        let mut tweetInfo = TweetUserData {tweet:"".to_string(), 
+        let mut tweet_info = TweetUserData {tweet:"".to_string(), 
                                            login:vec_str_to_string(login.to_vec()), 
                                            password:vec_str_to_string(password.to_vec()) };
         create_database();
         
-        let (status, mut list_tweets) = get_all_tweets_by_user(&mut tweetInfo);
+        let (status,list_tweets) = get_all_tweets_by_user(&mut tweet_info);
         
         if status 
         {
@@ -158,7 +162,7 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
         }
         else 
         { 
-            println!("Not found tweets for user specified\n"); 
+            println!("\nNot found tweets for user specified\n"); 
         }
     }
     else
@@ -166,5 +170,78 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
         println!("\nInvalid User or Invalid Login!\n");
     }
 
+    return result;
+}
+
+pub fn like_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
+{    
+    let mut result : self::CodeManagerTweet = CodeManagerTweet::CodeOk;
+
+    let ref login: Vec<&str> = cmd.values_of("UserLogin").unwrap().collect();
+
+    let ref password: Vec<&str> = cmd.values_of("UserPassword").unwrap().collect();
+
+    let ref tweet_id: Vec<&str> = cmd.values_of("TweetID").unwrap().collect();
+
+    //let ref unlike_option: Vec<&str> = cmd.values_of("-u").unwrap().collect();
+
+    let remove_like : bool = cmd.values_of("u").is_none() == false;
+
+    if len_vec_str(login.to_vec()) == 0 
+    {
+        result = CodeManagerTweet::InvalidLogin;
+    }
+    else if len_vec_str(password.to_vec()) == 0  
+    {
+        result = CodeManagerTweet::InvalidPassword;
+    }
+    else if len_vec_str(tweet_id.to_vec()) == 0  
+    {
+        result = CodeManagerTweet::InvalidTweetId;
+    }
+
+    create_database();
+
+    let (check_user, user_id) = get_user_id(vec_str_to_string(login.to_vec()),
+                                            vec_str_to_string(password.to_vec())
+                                            );
+    if check_user == false 
+    {
+        println!("\nInvalid User!!\n");
+        result = CodeManagerTweet::InvalidLogin;
+	}
+
+    if let CodeManagerTweet::CodeOk = result 
+    {        
+        let tweet_id_i32 = vec_str_to_i32(tweet_id.to_vec());
+
+        let (status, _) = get_any_tweet(tweet_id_i32);        
+        if status
+        {
+            //Here we have a valid user_id and tweet_id
+            if remove_like
+            {
+                if remove_like_tweet(user_id, tweet_id_i32)
+                {
+                    println!("\nLike removed with success!\n");                
+				}
+                else
+                {
+                    println!("\nLike don't removed (maybe don't exist any like...)!\n");
+				}
+			}
+            else
+            {
+                if insert_like_tweet(user_id, tweet_id_i32)
+                {
+                    println!("\nLike inserted with success!\n");
+				}
+                else
+                {
+                    println!("\nLike don't inserted with success!\n");                
+				}
+			}
+        }
+    }
     return result;
 }

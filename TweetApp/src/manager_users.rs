@@ -5,7 +5,6 @@ use crate::routines::len_vec_str;
 use crate::routines::vec_str_to_string;
 use crate::database::create_database;
 use crate::database::add_user;
-use std::string::ToString;
 
 use crate::database::UserData;
 
@@ -43,13 +42,12 @@ pub fn create_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if let CodeManagerUser::CodeOk = result {
         //Code for include user data in file here..
-        let mut userInfo = UserData { name :vec_str_to_string(name.to_vec()), 
+        let mut user_info = UserData { name :vec_str_to_string(name.to_vec()), 
                                       login:vec_str_to_string(login.to_vec()), 
                                       password:vec_str_to_string(password.to_vec()) };
 
-        println!("\nUserName 1 :{}\n", userInfo.name);
         create_database();
-        add_user(&mut userInfo);
+        add_user(&mut user_info);
         println!("\nUser created with success!\n");
     }
     else 

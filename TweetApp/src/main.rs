@@ -2,17 +2,17 @@
 extern crate clap;
 extern crate mysql;
 
-
 mod routines;
 mod manager_users;
 mod manager_tweets;
 mod database;
+mod macros;
 
 use clap::{Arg, App};
 
 fn main()
 {
-    let mut matches = App::new("TweetApp")
+    let matches = App::new("TweetApp")
         .version("1.0")
         .author("Augusto Rodrigues <augusto_mr@yahoo.com.br>")
         .about("Upnid Challenges")
@@ -55,6 +55,17 @@ fn main()
                       ]
                     )
         )
+        .subcommand(
+                    App::new("likeTweet")
+                    .about("Like or Unlike one specific tweet")
+                    .args(
+                      &[Arg::from_usage("-u 'Unlike tweet'"),
+                      Arg::from_usage("<UserLogin> 'Login used by User'"),
+                      Arg::from_usage("<UserPassword> 'PassWord used by User'"),                      
+                      Arg::from_usage("<TweetID> 'User's Tweet Unique ID'"),
+                      ]
+                    )
+        )
         .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("createUser")
@@ -71,11 +82,16 @@ fn main()
 	}
     else if let Some(matches) = matches.subcommand_matches("viewUserTweet")
     {
-        manager_tweets::viewUserTweet(&matches);
+        manager_tweets::view_user_tweet(&matches);
+    }
+    else if let Some(matches) = matches.subcommand_matches("likeTweet")
+    {
+        manager_tweets::like_user_tweet(&matches);
     }
     else
     { 
-        println!("Invalid Arguments!"); 
+        println!("\nPlease the use option help for more information!\n"); 
     }
 }
+
 
