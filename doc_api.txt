@@ -1,0 +1,133 @@
+Documentação:
+
+1. Descrição detalhada da aplicação TweetApp
+
+Elaborei o desafio de criar um aplicativo baseado no conceito de linha de comando no console bash ou console DOS (embora todos os testes foram feitos utilizando o console bash fiz uns testes simples no console DOS). 
+
+A ideia do aplicativo foi a maneira mais rápida de efetuar os testes durante a fase de desenvolvimento das APIs solicitadas pelo desafio. Cada ação disponibilizada pelo aplicativo é uma chamada de API feita pelo módulo principal do aplicativo.
+
+O aplicativo apenas repassa a ação (API) solicitada pelo usuário e as opções dessa ação (parametros de entrada da API) para os módulos que contem a implementação dessas ações (API).
+
+Estes módulos processam a ação solicitada pelo usuário e depois retorna para o módulo principal do aplicativo. Infelizmente não isolar no prazo fornecido a apresentação dos resultados gerados pelo processamento das ações solicitadas pelo usuário. 
+
+Logo os módulos que contem a implementação das APIs utilizam comandos para formatar e exibir o resultado do processamento das requisições solicitadas pelo usuário do aplicativo diretamente pela saida padrão do aplicativo (console bash ou DOS)
+
+Entretanto as próximas versões desse aplicativo irei implementar o devido ajuste para que as APIs implementadas nos seus respectivos módulos apenas repasse os resultados do processamento da ação solicitada pelo usuário via estruturas de dados para que a aplicação exiba diretamente esses resultados na saida padrão da aplicação (console DOS ou bash)
+
+2. Vinculo das ações do aplicativo com as APIs solicitadas pelo desafio.
+AÇÃO -> API
+createUser          -> Criar usuário do tweet (API bonus criada por conta própria. Veja o topico 'Explicação das APIs'
+createUserTweet     -> Cria um tweet de um usuário específico (API solicitada pelo desafio)
+likeTweet           -> Curtir ou Descurti um determinado tweet (API solicitada pelo desafio)
+showAllUserTweet    -> Exibe todos os tweets criados por um determinado usuário (API solicitada pelo desafio)
+viewUserTweet       -> Visualiza um determinado tweet criado por um usuário (API solicitada pelo desafio)
+
+3. Lista das ações do aplicativo
+
+Para obter a lista de ações do aplicativo e suas respectivas opções, digite na linha de comando:
+
+TweetApp help
+
+Deverá ser exibido as seguintes ações:
+
+TweetApp 1.0
+Augusto Rodrigues <augusto_mr@yahoo.com.br>
+Upnid Challenges
+
+USAGE:
+    TweetApp.exe [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    createUser          Create a user
+    createUserTweet     Create a Tweet for user
+    help                Prints this message or the help of the given subcommand(s)
+    likeTweet           Like or Unlike one specific tweet
+    showAllUserTweet    Show all Tweets for specified user
+    viewUserTweet       View one specific tweet for specified user
+
+Nota 1: Como informado antes, cada ação e suas opções disponibilizadas pelo aplicativo é na verdade uma chamada de uma determinada API.
+
+Nota 2: Toda a interface de texto bem como a codificação dos módulos da aplicação foram feitas em inglês por questão pessoal.
+
+Cada ação possui seu próprio conjunto de argumentos obrigatórios e opcionais. Para obter mais detalhes sobre os argumentos de cada ação, digite a flag '--help' após informar o nome da ação que deseja que o aplicativo execute:
+
+Exemplo:
+
+TweetApp.exe createUser --help
+Create a user
+
+USAGE:
+    TweetApp.exe createUser <UserName> <UserLogin> <UserPassword>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <UserName>        User Name
+    <UserLogin>       Login used by User
+    <UserPassword>    PassWord used by User
+
+Nota 3: Determinadas ações exigem o número de identificação do tweet criado por um determinado usuario. Para obter o número dessa identificação, utilize a ação 'showAllUserTweet'
+
+4. Como fazer a build em uma máquina local
+
+A build do aplicativo foi feita através dos recursos da plataforma RUST usando como repositório a plataforma GIT/GITHUB.
+
+Portanto é necessário executar as orientações abaixo na máquina local que irá executar a build e o próprio aplicativo:
+
+* Instalação dos compiladores e bibliotecas da linguagem RUST
+* Instalação do GIT
+* Configuração de alguma conta no github
+
+Após executar com sucesso as orientações acima, execute os comandos gits abaixo:
+
+- crie uma pasta para armazenar localmente o repositório que contem os fontes do aplicativo e das APIs
+- efetue o comando git clone <repo>, aonde <repo> = https://github.com/AugustoRodrigues1979/UpnidChallenge.git
+- acesse a pasta TweetApp
+- digite o comando "cargo build" e aguarde o processamento das libs da linguagem RUST (demora apenas na primeira execução)
+  Nota: O antivirus AVG monitora as ações realizadas pelo comando cargo, mas depois libera o processamento desses utilitários
+
+- após a completa compilação e linkagem efetuada pelo comando cargo, a aplicação irá ser criada no diretório target/debug
+- execute a aplicação da seguinte forma:
+  .\target\debug\TweetApp.exe help
+
+Nota: Lembre-se que cada ação disponibilizada pelo aplicativo possui um texto de ajuda. 
+Basta digitar o nome da ação seguido pela flag --help.
+
+5. Roteiro das execuções das ações
+
+O aplicativo permite executar as ações em qualquer ordem que o usuário desejar. Entretanto para ter um resultado satisfatório, sugiro executar essas ações na seguinte ordem
+
+a. Crie um usuário ou mais usuários através da opçao 'createUser', fornecendo as seguintes opções:
+   - Nome do Usuário, delimitado entre aspas duplas
+   - Login do usuário 
+   - Password do usuário
+
+b. Crie um ou mais tweets com o usuário(s) criado(s) no passo anterior através da opção createUserTweet, fornecendo as seguintes opções:
+   - Login do usuário
+   - Password do usuário
+   - Texto do tweet, delimitado por aspas duplas
+
+c. Visualize todos os tweets de um determinado usuário ou apenas um único tweet de um determinado usuário utilizando, respectivamente, as seguintes ações: showAllUserTweet e viewUserTweet. Utilize as seguintes opções:
+   - Login do usuário
+   - Password do usuário
+   - Id do Tweet (apenas para a opção viewUserTweet)
+
+d. Curta ou descurta os tweets criados no passo anterior através da opção likeTweet, fornecendo as seguintes opções:
+   - Login do usuário
+   - Password do usuário
+   - Id do Tweet
+   - Curtir (opção padrão) ou descurtir o tweet (flag -u)
+
+6. Possíveis problemas e como resolver:
+
+a. Caso ocorra quaisquer problemas para obter o repositório do aplicativo (build), siga as instruções abaixo:
+   * Crie um diretório chamado AugustoRodrigues
+   * Descompacte o arquivo compactado UpnidChallenge.git.zip dentro desse diretório
+   * Acesse o sub-diretório TweetApp. É nesse diretório que se encontra o repositório do aplicativo
+
