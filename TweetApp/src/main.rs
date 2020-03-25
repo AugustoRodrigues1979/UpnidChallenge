@@ -6,7 +6,6 @@ mod routines;
 mod manager_users;
 mod manager_tweets;
 mod database;
-mod macros;
 
 use clap::{Arg, App};
 
@@ -70,22 +69,27 @@ fn main()
 
     if let Some(matches) = matches.subcommand_matches("createUser")
     {
+        database::create_database();
         manager_users::create_user(&matches);
 	}
     else if let Some(matches) = matches.subcommand_matches("createUserTweet")
     {
+        database::create_database();
         manager_tweets::create_tweet_user(&matches);
 	}
     else if let Some(matches) = matches.subcommand_matches("showAllUserTweet")
     {
+        database::create_database();
         manager_tweets::show_all_tweets_by_user(&matches);
 	}
     else if let Some(matches) = matches.subcommand_matches("viewUserTweet")
     {
+        database::create_database();
         manager_tweets::view_user_tweet(&matches);
     }
     else if let Some(matches) = matches.subcommand_matches("likeTweet")
     {
+        database::create_database();
         manager_tweets::like_user_tweet(&matches);
     }
     else

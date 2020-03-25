@@ -22,7 +22,15 @@ pub struct TweetUserData {
 pub struct TweetDataRecord {
 	pub user_id : i32,
 	pub tweet_id: i32,
-	pub tweet_data: String
+	pub tweet_data: String,
+	pub liked: i32
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct LikesRecords {
+	pub user_id : i32,
+	pub tweet_id: i32,
+	pub liked: i32
 }
 
 // public methods
@@ -46,6 +54,7 @@ pub fn create_database() {
 						user_id int,
 						tweet_id int PRIMARY KEY AUTO_INCREMENT,
 						tweet_data text,
+						liked int default false,
 						FOREIGN KEY (user_id)
 							REFERENCES USER_TABLE(user_id)
 					)",()).unwrap();
@@ -53,6 +62,7 @@ pub fn create_database() {
 	pool.prep_exec(r"CREATE TABLE IF NOT EXISTS LIKE_TABLE (
 						user_id int,
 						tweet_id int,
+						liked int default false,
 						FOREIGN KEY (user_id)
 							REFERENCES USER_TABLE(user_id),
 						FOREIGN KEY (tweet_id)
@@ -78,14 +88,16 @@ pub fn add_tweet_user( tweet_info : &mut TweetUserData) {
 	}
 }
 
-pub fn add_user( user_info : &mut UserData) {
+pub fn add_user( user_info : &mut UserData) -> (bool, String) 
+{
 
-	if search_user_login( &user_info.login) 
+if search_user_login( &user_info.login) 
 	{
-		let mut warning_login : String = "Login (".to_owned();
+		let mut warning_login : String = "Login ['".to_owned();
 		warning_login.push_str(&user_info.login);
-		warning_login.push_str(") already exists!");
-		println!("\n{}", warning_login);
+		warning_login.push_str("'] already exists!");
+
+		return (false, warning_login);
 	}
 	else
 	{
@@ -98,6 +110,8 @@ pub fn add_user( user_info : &mut UserData) {
 						params!("a" => &user_info.name, 
 							    "b" => &user_info.login,
 							    "c" => &user_info.password)).unwrap();
+
+		return (true, "".to_string());
 	}
 }
 
@@ -117,9 +131,10 @@ fn create_pool() -> mysql::Pool
 fn get_one_tweet_user( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 {
 	let pool = create_pool();
-	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data
+	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data, liked
 	                                    FROM TWEET_TABLE
 									    WHERE user_id = '".to_owned();
+
 	stmt_str.push_str(&user_id.to_string());
 	stmt_str.push_str("' AND tweet_id = '");
 	stmt_str.push_str(&tweet_id.to_string());
@@ -136,14 +151,16 @@ fn get_one_tweet_user( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRe
             eprintln!("{}", e);
             return (false, list_tweets);
         }
-    };
+    }; 
 
-    for row in stmt.execute(()).unwrap() {
-        let (user_info,tweet_info, tweet_body) = mysql::from_row::<(i32,i32,String)>(row.unwrap());
+    for row in stmt.execute(()).unwrap() 
+	{
+        let (user_info,tweet_info, tweet_body, liked) = mysql::from_row::<(i32,i32,String, i32)>(row.unwrap());
 
 		list_tweets.push(TweetDataRecord{user_id    : user_info ,
 										 tweet_id   : tweet_info,
-										 tweet_data : tweet_body});
+										 tweet_data : tweet_body,
+										 liked      : liked});
     }
 
 	(list_tweets.is_empty() == false, list_tweets)
@@ -152,7 +169,7 @@ fn get_one_tweet_user( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRe
 pub fn get_any_tweet( tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 {
 	let pool = create_pool();
-	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data
+	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data, liked
 	                                    FROM TWEET_TABLE
 									    WHERE tweet_id = '".to_owned();
 	stmt_str.push_str(&tweet_id.to_string());
@@ -172,20 +189,21 @@ pub fn get_any_tweet( tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>)
     };
 
     for row in stmt.execute(()).unwrap() {
-        let (user_info,tweet_info, tweet_body) = mysql::from_row::<(i32,i32,String)>(row.unwrap());
+        let (user_info,tweet_info, tweet_body, liked) = mysql::from_row::<(i32,i32,String,i32)>(row.unwrap());
 
 		list_tweets.push(TweetDataRecord{user_id    : user_info ,
 										 tweet_id   : tweet_info,
-										 tweet_data : tweet_body});
+										 tweet_data : tweet_body,
+										 liked      : liked});
     }
 
 	(list_tweets.is_empty() == false, list_tweets)
 }
 
-pub fn get_user_id(login : String, password : String) -> (bool, i32)
+pub fn get_user_id(login : String, password : String) -> (bool, i32, String)
 {
 	let pool = create_pool();
-	let mut stmt_str : String = "SELECT user_id
+	let mut stmt_str : String = "SELECT user_id, user_name
 	                                    FROM USER_TABLE
 									    WHERE user_login = '".to_owned();
 	stmt_str.push_str(&login);
@@ -200,24 +218,23 @@ pub fn get_user_id(login : String, password : String) -> (bool, i32)
         Ok(stmt) => stmt,
         Err(e) => {
             eprintln!("{}", e);
-            return (false, 0);
+            return (false, 0, "".to_string());
         }
     };
 
-	let mut user_id : i32 = 0;
-
     for row in stmt.execute(()).unwrap() {
-        let user_info : i32 = mysql::from_row::<i32>(row.unwrap());
-		user_id =   user_info;
+        let (user_info, user_name) = mysql::from_row::<(i32,String)>(row.unwrap());
+		
+		return (true, user_info, user_name);
 	}
 
-	(true, user_id)
+	(false, 0, "".to_string())
 }
 
 fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 {
 	let pool = create_pool();
-	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data
+	let mut stmt_str : String = "SELECT user_id, tweet_id, tweet_data, liked
 	                                    FROM TWEET_TABLE
 									    WHERE user_id = '".to_owned();
 	stmt_str.push_str(&user_id.to_string());
@@ -237,14 +254,15 @@ fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
     };
 
     for row in stmt.execute(()).unwrap() {
-        let (user_info,tweet_info, tweet_body) = mysql::from_row::<(i32,i32,String)>(row.unwrap());
+        let (user_info,tweet_info, tweet_body,liked) = mysql::from_row::<(i32,i32,String,i32)>(row.unwrap());
 
 		list_tweets.push(TweetDataRecord{user_id    : user_info ,
 										 tweet_id   : tweet_info,
-										 tweet_data : tweet_body});
+										 tweet_data : tweet_body,
+										 liked      : liked});
     }
 
-	(true, list_tweets)
+	(list_tweets.is_empty() == false, list_tweets)
 }
 
 fn search_user_id( login : &String, password : &String ) -> (bool, i32)
@@ -313,7 +331,9 @@ pub fn get_all_tweets_by_user( tweet_info : &mut TweetUserData) -> (bool, Vec<Tw
 	if status_bk
 	{
 		let (status,  mut list_tweets ) = get_tweets_by_user_id( user_id );
-		list_tweets_bk.append(&mut list_tweets);
+
+		if status && (list_tweets.len() > 0) { list_tweets_bk.append(&mut list_tweets)};
+		
 		status_bk = status;
 	}
 	return (status_bk, list_tweets_bk);
@@ -333,6 +353,39 @@ pub fn get_tweet_by_id( tweet_info : &mut TweetUserData, tweet_id: i32) -> (bool
 	}
 	
 	return (status_bk, list_tweets_bk);
+}
+
+
+pub fn get_total_like_tweet( tweet_id : i32, liked : bool) -> (bool, i32)
+{
+	let pool = create_pool();
+	let mut stmt_str : String = "SELECT COUNT(tweet_id) 
+	                                    FROM LIKE_TABLE
+									    WHERE tweet_id = '".to_owned();
+
+	stmt_str.push_str(&tweet_id.to_string());
+	if liked { stmt_str.push_str("' AND liked='1'");}
+	else     { stmt_str.push_str("' AND liked='0'");}
+
+	//println!("Statement get_total_like_tweet:{}", stmt_str);
+
+	let mut stmt = match pool.prepare(stmt_str)
+	{
+        Ok(stmt) => stmt,
+        Err(e) => {
+            eprintln!("{}", e);
+            return (false, 0);
+        }
+    };
+
+    for row in stmt.execute(()).unwrap() {
+       let (amount_tweets,) =
+            mysql::from_row::<(i32,)>(row.unwrap());
+
+		return (true, amount_tweets);
+ 	}
+	
+	return (true, 0);
 }
 
 fn search_like_tweet(user_id : i32, tweet_id : i32) -> bool
@@ -368,48 +421,112 @@ fn search_like_tweet(user_id : i32, tweet_id : i32) -> bool
 	return false;
 }
 
-pub fn remove_like_tweet(user_id : i32, tweet_id : i32) -> bool
+fn mount_str_insert_like(status_like : bool, user_id : i32, tweet_id : i32) -> String
 {
-	if search_like_tweet(user_id, tweet_id) == false
-	{
-		return false;
-	}
+	let mut stmt_str : String = String::new();
+	let str_like = if status_like { "1" } else { "0"};
 
-	let pool = create_pool();
-	let mut stmt_str : String = "DELETE FROM LIKE_TABLE
-									    WHERE user_id = '".to_owned();
+	stmt_str.push_str("INSERT INTO LIKE_TABLE (user_id, tweet_id, liked) VALUES ('");
 	stmt_str.push_str(&user_id.to_string());
-	stmt_str.push_str("' AND tweet_id = '");
+	stmt_str.push_str("','");
+	stmt_str.push_str(&tweet_id.to_string());
+	stmt_str.push_str("','");
+	stmt_str.push_str(&str_like.to_string());
+	stmt_str.push_str("')");
+
+	return stmt_str;
+}
+
+fn mount_str_update_like_in_tweet(status_like : bool, user_id : i32, tweet_id : i32) -> String
+{
+	let mut stmt_str : String = String::new();
+	let str_like = if status_like { "1" } else { "0"};
+
+	stmt_str.push_str("UPDATE TWEET_TABLE SET user_id='");
+	stmt_str.push_str(&user_id.to_string());
+	stmt_str.push_str("',");
+	stmt_str.push_str("tweet_id='");
+	stmt_str.push_str(&tweet_id.to_string());
+	stmt_str.push_str("',");
+	stmt_str.push_str("liked='");
+	stmt_str.push_str(&str_like.to_string());
+	stmt_str.push_str("' ");
+	stmt_str.push_str("WHERE user_id='");
+	stmt_str.push_str(&user_id.to_string());
+	stmt_str.push_str("' and ");
+	stmt_str.push_str("tweet_id='");
 	stmt_str.push_str(&tweet_id.to_string());
 	stmt_str.push_str("'");
 
-	//println!("Statement remove like tweet:{}", stmt_str);
+	return stmt_str;
+}
+
+fn mount_str_update_like(status_like : bool, user_id : i32, tweet_id : i32) -> String
+{
+	let mut stmt_str : String = String::new();
+	let str_like = if status_like { "1" } else { "0"};
+
+	stmt_str.push_str("UPDATE LIKE_TABLE SET user_id='");
+	stmt_str.push_str(&user_id.to_string());
+	stmt_str.push_str("',");
+	stmt_str.push_str("tweet_id='");
+	stmt_str.push_str(&tweet_id.to_string());
+	stmt_str.push_str("',");
+	stmt_str.push_str("liked='");
+	stmt_str.push_str(&str_like.to_string());
+	stmt_str.push_str("' ");
+	stmt_str.push_str("WHERE user_id='");
+	stmt_str.push_str(&user_id.to_string());
+	stmt_str.push_str("' and ");
+	stmt_str.push_str("tweet_id='");
+	stmt_str.push_str(&tweet_id.to_string());
+	stmt_str.push_str("'");
+
+	return stmt_str;
+}
+
+fn update_like_tweet(status_like : bool, user_id : i32, tweet_id : i32) -> bool
+{
+	let pool = create_pool();
+	
+	let mut stmt_str : String = String::new();
+
+	if search_like_tweet(user_id, tweet_id)
+	{
+		stmt_str.push_str(&mount_str_update_like(status_like, user_id, tweet_id));
+	}
+	else
+	{
+		stmt_str.push_str(&mount_str_insert_like(status_like, user_id, tweet_id));
+	}
+	
+
+	//println!("Statement update or insert like in LIKE_TABLE:{}", stmt_str);
 
 	pool.prep_exec(stmt_str, ()).unwrap();
 	
 	return true
 }
 
+pub fn remove_like_tweet(user_id : i32, tweet_id : i32) -> bool
+{
+	return update_like_tweet(false, user_id, tweet_id);
+}
+
 pub fn insert_like_tweet(user_id : i32, tweet_id : i32) -> bool
 {
-	if search_like_tweet(user_id, tweet_id) == true
-	{
-		return false;
-	}
+	return update_like_tweet(true, user_id, tweet_id);
+}
 
+pub fn update_status_like_tweet(status_like : bool, user_id : i32, tweet_id : i32 )
+{
 	let pool = create_pool();
 
-	let mut stmt_str : String = "INSERT INTO LIKE_TABLE (user_id, tweet_id)
-									             VALUES ('".to_owned();
+	let stmt_str = mount_str_update_like_in_tweet(status_like,
+	                                                  user_id,
+					                                  tweet_id);
 
-	stmt_str.push_str(&user_id.to_string());
-	stmt_str.push_str("','");
-	stmt_str.push_str(&tweet_id.to_string());
-	stmt_str.push_str("')");
+	//println!("Statement query update like of tweet's user:{}", stmt_str);
 
-	//println!("Statement insert like tweet:{}", stmt_str);
-
-	pool.prep_exec(stmt_str, ()).unwrap();
-	
-	return true;
+	pool.prep_exec(stmt_str,()).unwrap();
 }

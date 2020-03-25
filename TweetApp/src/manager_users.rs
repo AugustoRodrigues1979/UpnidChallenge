@@ -3,7 +3,6 @@ extern crate clap;
 
 use crate::routines::len_vec_str;
 use crate::routines::vec_str_to_string;
-use crate::database::create_database;
 use crate::database::add_user;
 
 use crate::database::UserData;
@@ -46,9 +45,9 @@ pub fn create_user(cmd : &clap::ArgMatches) -> CodeManagerUser
                                       login:vec_str_to_string(login.to_vec()), 
                                       password:vec_str_to_string(password.to_vec()) };
 
-        create_database();
-        add_user(&mut user_info);
-        println!("\nUser created with success!\n");
+        let (status, msg_err) = add_user(&mut user_info);
+        if status { println!("\nUser created with success!\n"); }
+        else      { println!("\n{}\n", msg_err); }
     }
     else 
     {
