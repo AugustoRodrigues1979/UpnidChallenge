@@ -65,23 +65,33 @@ fn main()
                       ]
                     )
         )
-        .get_matches();
+        .subcommand(
+          App::new("followUser")
+          .about("Follow or Unfollow one specific user")
+          .args(
+            &[Arg::from_usage("-u 'Unfollow user'"),
+            Arg::from_usage("<UserLogin> 'Login used by User'"),
+            Arg::from_usage("<UserPassword> 'PassWord used by User'"),                      
+            Arg::from_usage("<UserId> 'Unique ID user to follow'"),
+            ]
+          )
+        ).get_matches();
 
     if let Some(matches) = matches.subcommand_matches("createUser")
     {
         database::create_database();
         manager_users::create_user(&matches);
-	}
+	  }
     else if let Some(matches) = matches.subcommand_matches("createUserTweet")
     {
         database::create_database();
         manager_tweets::create_tweet_user(&matches);
-	}
+	  }
     else if let Some(matches) = matches.subcommand_matches("showAllUserTweet")
     {
         database::create_database();
         manager_tweets::show_all_tweets_by_user(&matches);
-	}
+	  }
     else if let Some(matches) = matches.subcommand_matches("viewUserTweet")
     {
         database::create_database();
@@ -91,6 +101,11 @@ fn main()
     {
         database::create_database();
         manager_tweets::like_user_tweet(&matches);
+    }
+    else if let Some(matches) = matches.subcommand_matches("followUser")
+    {
+        database::create_database();
+        manager_users::follow_user(&matches);
     }
     else
     { 

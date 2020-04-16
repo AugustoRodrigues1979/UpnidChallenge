@@ -33,6 +33,13 @@ pub struct LikesRecords {
 	pub liked: i32
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct FollowUserData {
+	pub status_follow   :String, 
+	pub user_id_follower:String, 
+	pub user_id_followed:String
+}
+
 // public methods
 pub fn create_database() {
 	//TODO: Code here all initialization for mysql
@@ -68,7 +75,61 @@ pub fn create_database() {
 						FOREIGN KEY (tweet_id)
 							REFERENCES TWEET_TABLE(tweet_id)
 					)",()).unwrap();
+
+	pool.prep_exec(r"CREATE TABLE IF NOT EXISTS FOLLOW_TABLE (
+						user_id_follower int,
+						user_id_followed int,
+						following int default false,
+						PRIMARY KEY (user_id_follower, user_id_followed ),
+						FOREIGN KEY (user_id_follower)
+							REFERENCES USER_TABLE(user_id),
+						FOREIGN KEY (user_id_followed)
+							REFERENCES USER_TABLE(user_id)
+					)",()).unwrap();
 }
+
+
+pub fn add_follower_user(follow_info : &FollowUserData) -> bool {	
+	let pool = create_pool();
+	println!("Updating follow register...");
+
+	match  pool.prep_exec("INSERT INTO FOLLOW_TABLE(user_id_follower, 
+													user_id_followed,
+													following)
+										VALUES    (:a, :b, :c)",
+							params!("a" => &follow_info.user_id_follower,
+									"b" => &follow_info.user_id_followed, 
+									"c" => &follow_info.status_follow)) 
+	{
+		Ok(_)    => true,
+		Err(error)   => {
+			println!("Error when inserting register : {}", error);
+			println!("Updating follow register...");
+			
+
+			match pool.prep_exec("UPDATE FOLLOW_TABLE SET 
+									user_id_follower = :a, 
+									user_id_followed = :b,
+									following = :c
+	 							WHERE user_id_follower = :a AND  
+									   user_id_followed = :b",
+								params!("a" => &follow_info.user_id_follower,
+		   								"b" => &follow_info.user_id_followed, 
+		   								"c" => &follow_info.status_follow))
+			{
+				Ok(_) => true,
+				Err(_) => { 
+					println!("Error when updating register : {}", error);
+					false
+				}
+			}
+
+		}
+	}
+}
+
+
+
 
 pub fn add_tweet_user( tweet_info : &mut TweetUserData) {
 	let (status, user_id) = search_user_id (&tweet_info.login, 
@@ -115,14 +176,22 @@ if search_user_login( &user_info.login)
 	}
 }
 
-fn get_source_database() -> String
+fn get_source_database(env_production : bool) -> String
 {
-	return "mysql://mZ1Vu6T31b:3oWn6b41Df@remotemysql.com:3306/mZ1Vu6T31b".to_string();
+	let mut url : String = String::new();
+	if (env_production) {
+		url.push_str(&"mysql://mZ1Vu6T31b:3oWn6b41Df@remotemysql.com:3306/mZ1Vu6T31b".to_string());
+	}
+	else {
+		url.push_str(&"mysql://H1hNuyZVgo:rzXR3LdsTx@remotemysql.com:3306/H1hNuyZVgo".to_string());
+	}
+	
+	return url; 
 }
 
 fn create_pool() -> mysql::Pool
 {
-	let url = get_source_database();
+	let url = get_source_database(false);
 	let pool = mysql::Pool::new_manual(1,1,url).unwrap();
 
 	return pool;
@@ -229,6 +298,35 @@ pub fn get_user_id(login : String, password : String) -> (bool, i32, String)
 	}
 
 	(false, 0, "".to_string())
+}
+
+pub fn get_user_by_id(user_id : String) -> (bool, String, String)
+{
+	let pool = create_pool();
+	let mut stmt_str : String = "SELECT user_name, user_password
+	                                    FROM USER_TABLE
+									    WHERE user_id = '".to_string();
+	stmt_str.push_str(&user_id);
+	stmt_str.push_str("'");
+
+	println!("Statement get user by id:{}", stmt_str);
+
+	let mut stmt = match pool.prepare(stmt_str)
+	{
+        Ok(stmt) => stmt,
+        Err(e) => {
+            eprintln!("{}", e);
+			return (false, "".to_string(), "".to_string());
+        }
+    };
+
+    for row in stmt.execute(()).unwrap() {
+        let (user_login, user_password) = mysql::from_row::<(String,String)>(row.unwrap());
+		
+		return (true, user_login, user_password);
+	}
+
+	(false, "".to_string(), "".to_string())
 }
 
 fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
