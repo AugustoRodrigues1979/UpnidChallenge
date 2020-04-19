@@ -1,4 +1,6 @@
 //module responsible for manager all data the tweet user
+
+
 extern crate clap;
 
 use crate::lib::routines::len_vec_str;
@@ -17,7 +19,8 @@ pub enum CodeManagerUser {
     CodeOk,
     InvalidUserName,
     InvalidLogin,
-    InvalidPassword
+    InvalidPassword,
+    DoNotIncludeNewUser
 }
 
 pub fn follow_user(cmd : &clap::ArgMatches) -> CodeManagerUser
@@ -33,12 +36,12 @@ pub fn follow_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if len_vec_str(login.to_vec()) == 0 
     {
-        println!("\nInvalid UserLogin\n");
+        print_app_msg!("\nInvalid UserLogin\n");
         result = CodeManagerUser::InvalidLogin;
     }
     else if len_vec_str(password.to_vec()) == 0  
     {
-        println!("\nInvalid UserPassword\n");
+        print_app_msg!("\nInvalid UserPassword\n");
         result = CodeManagerUser::InvalidPassword;
     }
 
@@ -52,7 +55,7 @@ pub fn follow_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if check_user == false 
     {
-        println!("\nInvalid User Login or User Password!\n");
+        print_app_msg!("\nInvalid User Login or User Password!\n");
         return CodeManagerUser::InvalidLogin;
     }
     
@@ -61,7 +64,7 @@ pub fn follow_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if (check_user == false) || ( id == user_id_follower) 
     {
-        println!("\nInvalid User ID to follow!\n");
+        print_app_msg!("\nInvalid User ID to follow!\n");
         return CodeManagerUser::InvalidLogin;
     }
 
@@ -82,11 +85,11 @@ pub fn follow_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if add_follower_user(&follow_info)
     {
-        println!("\nStatus of followed User updated with success\n");
+        print_app_msg!("\nStatus of followed User updated with success\n");
     }
     else    
     {
-        println!("\nSorry but don't possible follow the specified user\n");
+        print_app_msg!("\nSorry but don't possible follow the specified user\n");
         result = CodeManagerUser::InvalidLogin;
     }
 
@@ -104,17 +107,17 @@ pub fn create_user(cmd : &clap::ArgMatches) -> CodeManagerUser
 
     if len_vec_str(name.to_vec()) == 0
     {
-        println!("\nInvalid UserName\n");
+        print_app_msg!("\nInvalid UserName\n");
         result = CodeManagerUser::InvalidUserName;
     }
     else if len_vec_str(login.to_vec()) == 0 
     {
-        println!("\nInvalid UserLogin\n");
+        print_app_msg!("\nInvalid UserLogin\n");
         result = CodeManagerUser::InvalidLogin;
     }
     else if len_vec_str(password.to_vec()) == 0  
     {
-        println!("\nInvalid UserPassword\n");
+        print_app_msg!("\nInvalid UserPassword\n");
         result = CodeManagerUser::InvalidPassword;
     }
 
@@ -125,12 +128,19 @@ pub fn create_user(cmd : &clap::ArgMatches) -> CodeManagerUser
                                       password:vec_str_to_string(password.to_vec()) };
 
         let (status, msg_err) = add_user(&mut user_info);
-        if status { println!("\nUser created with success!\n"); }
-        else      { println!("\n{}\n", msg_err); }
+        if status 
+        { 
+            print_app_msg!("\nUser created with success!\n");
+        }
+        else
+        { 
+            print_app_msg!("\n{}\n", msg_err);
+            //result = CodeManagerUser::DoNotIncludeNewUser;
+        }
     }
     else 
     {
-        println!("\nUser don't created with success!\n");
+        print_app_msg!("\nUser don't created with success!\n");
     }
 
     return result;

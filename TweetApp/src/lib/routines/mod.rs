@@ -83,19 +83,17 @@ impl StringUtils for str {
     }
 }
 
-/*
-pub fn get_substring_from_string(input_string : String, pos : i32, length : i32)
+pub static mut enable_output_msg : bool = false;
+
+pub fn enable_app_msg(enable : bool)
 {
-	let mut out = String::new();
-
-	out.push_str(input_string);
-
-	if pos >= out.chars().count() { return ""; }
-	if pos < 0 
-
-	match out[pos..length-pos] {
-		Ok(val)    => return (true,val),
-		Err(_i)    => return (false,0),
-	}
+    unsafe { enable_output_msg = enable; }
 }
-*/
+
+#[macro_export]
+macro_rules! print_app_msg {
+    ()            => (unsafe{ if $crate::lib::routines::enable_output_msg { println!() } });
+    ($($arg:tt)*) => (unsafe{
+                        if $crate::lib::routines::enable_output_msg { println!($($arg)*) }
+                     })
+}

@@ -39,17 +39,17 @@ pub fn create_tweet_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if len_vec_str(tweetdata.to_vec()) == 0
     {
-        println!("\nInvalid Tweet's Contents\n");
+        print_app_msg!("\nInvalid Tweet's Contents\n");
         result = CodeManagerTweet::InvalidTweetData;
     }
     else if len_vec_str(login.to_vec()) == 0 
     {
-        println!("\nInvalid UserLogin\n");
+        print_app_msg!("\nInvalid UserLogin\n");
         result = CodeManagerTweet::InvalidLogin;
     }
     else if len_vec_str(password.to_vec()) == 0  
     {
-        println!("\nInvalid UserPassword\n");
+        print_app_msg!("\nInvalid UserPassword\n");
         result = CodeManagerTweet::InvalidPassword;
     }
 
@@ -61,11 +61,11 @@ pub fn create_tweet_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
                                            password:vec_str_to_string(password.to_vec()) };
         add_tweet_user(&mut tweet_info);
 
-        println!("\nUser tweet created with success\n");
+        print_app_msg!("\nUser tweet created with success\n");
     }
     else 
     {
-        println!("\nTweet User don't created with success!\n");
+        print_app_msg!("\nTweet User don't created with success!\n");
     }
 
     return result;
@@ -83,17 +83,17 @@ pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if len_vec_str(login.to_vec()) == 0 
     {
-        println!("\nInvalid login!\n");
+        print_app_msg!("\nInvalid login!\n");
         result = CodeManagerTweet::InvalidLogin;
     }
     else if len_vec_str(password.to_vec()) == 0  
     {
-        println!("\nInvalid password!\n");
+        print_app_msg!("\nInvalid password!\n");
         result = CodeManagerTweet::InvalidPassword;
     }
     else if len_vec_str(tweet_id.to_vec()) == 0  
     {
-        println!("\nInvalid tweet id!\n");
+        print_app_msg!("\nInvalid tweet id!\n");
         result = CodeManagerTweet::InvalidTweetId;
     }
 
@@ -107,7 +107,7 @@ pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
                                             );
     if check_user == false 
     {
-        println!("\nInvalid Login or Password!\n");
+        print_app_msg!("\nInvalid Login or Password!\n");
         return CodeManagerTweet::InvalidLogin;
 	}
 
@@ -115,7 +115,7 @@ pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
     
     if check_tweet_id == false
     {
-        println!("\nInvalid tweet id!\n");
+        print_app_msg!("\nInvalid tweet id!\n");
         return CodeManagerTweet::InvalidLogin;
     }
 
@@ -130,14 +130,14 @@ pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
         
         if status 
         {
-            println!("\nListing one tweet for user specified\n");
+            print_app_msg!("\nListing one tweet for user specified\n");
 
             let title_usename  = format!("{:-^1$}", "UserName".to_string(), 30);
             let title_tw_id    = format!("{:-^1$}", "Tweet Id".to_string(), 10);
             let title_like_tw  = format!("{:-^1$}", "Like".to_string(), 10);
             let title_tw_body  = format!("{:-^1$}", "Tweet Body".to_string(), 70);
 
-            println!("\n{} {} {} {}\n", 
+            print_app_msg!("\n{} {} {} {}\n", 
                     title_usename,
                     title_tw_id,
                     title_like_tw,
@@ -155,7 +155,7 @@ pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
                 let txt_tw_body  = format!("{: <1$}", t.tweet_data.to_string(), 70);
 
-                println!("\n{} {} {} {}\n", 
+                print_app_msg!("\n{} {} {} {}\n", 
                     txt_usename,
                     txt_tw_id,
                     txt_like_tw,
@@ -164,7 +164,7 @@ pub fn view_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
         }
         else 
         { 
-            println!("\nNot found tweets for user specified\n"); 
+            print_app_msg!("\nNot found tweets for user specified\n"); 
         }
     }
 
@@ -181,12 +181,12 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if len_vec_str(login.to_vec()) == 0 
     {
-        println!("\nInvalid login\n");
+        print_app_msg!("\nInvalid login\n");
         result = CodeManagerTweet::InvalidLogin;
     }
     else if len_vec_str(password.to_vec()) == 0  
     {
-        println!("\nInvalid password\n");
+        print_app_msg!("\nInvalid password\n");
         result = CodeManagerTweet::InvalidPassword;
     }
 
@@ -200,7 +200,7 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
                                         );
     if check_user == false 
     {
-        println!("\nInvalid Login or Password\n");
+        print_app_msg!("\nInvalid Login or Password\n");
         return CodeManagerTweet::InvalidLogin;
     }
 
@@ -213,18 +213,18 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if !status
     {
-        println!("\nNot found tweets created by user\n");  
+        print_app_msg!("\nNot found tweets created by user\n");  
         return CodeManagerTweet::NotFoundTweets;
 	}
 
-    println!("\nListing All Tweets for user specified\n");
+    print_app_msg!("\nListing All Tweets for user specified\n");
             
     let title_usename  = format!("{:-^1$}", "UserName".to_string(), 30);
     let title_tw_id    = format!("{:-^1$}", "Tweet Id".to_string(), 10);
     let title_like_tw  = format!("{:-^1$}", "Like".to_string(), 10);
     let title_tw_body  = format!("{:-^1$}", "Tweet Body".to_string(), 70);
 
-    println!("\n{} {} {} {}\n", 
+    print_app_msg!("\n{} {} {} {}\n", 
         title_usename,
         title_tw_id,
         title_like_tw,
@@ -244,7 +244,7 @@ pub fn show_all_tweets_by_user(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
         let txt_tw_body  = format!("{: <1$}", t.tweet_data.to_string(), 70);
 
-        println!("\n{} {} {} {}\n", 
+        print_app_msg!("\n{} {} {} {}\n", 
             txt_usename,
             txt_tw_id,
             txt_like_tw,
@@ -270,17 +270,17 @@ pub fn like_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
 
     if len_vec_str(login.to_vec()) == 0 
     {
-        println!("\nInvalid login\n");
+        print_app_msg!("\nInvalid login\n");
         result = CodeManagerTweet::InvalidLogin;
     }
     else if len_vec_str(password.to_vec()) == 0  
     {
-        println!("\nInvalid password\n");
+        print_app_msg!("\nInvalid password\n");
         result = CodeManagerTweet::InvalidPassword;
     }
     else if len_vec_str(tweet_id.to_vec()) == 0  
     {
-        println!("\nInvalid tweet id!\n");
+        print_app_msg!("\nInvalid tweet id!\n");
         result = CodeManagerTweet::InvalidTweetId;
     }
 
@@ -288,7 +288,7 @@ pub fn like_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
                                                        vec_str_to_string(password.to_vec()));
     if check_user == false
     {
-        println!("\nInvalid Login or Password!\n");
+        print_app_msg!("\nInvalid Login or Password!\n");
         return CodeManagerTweet::InvalidLogin;
 	}
 
@@ -296,7 +296,7 @@ pub fn like_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
     
     if check_tweet_id == false
     {
-        println!("\nInvalid tweet id!\n");
+        print_app_msg!("\nInvalid tweet id!\n");
         return CodeManagerTweet::InvalidLogin;
     }
 
@@ -323,11 +323,11 @@ pub fn like_user_tweet(cmd : &clap::ArgMatches) -> CodeManagerTweet
                 update_status_like_tweet(amount_like != 0,user_id, tweet_id_i32 );
             }
 
-            println!("\nLike inserted or removed with success!\n");
+            print_app_msg!("\nLike inserted or removed with success!\n");
         }
         else
         {
-            println!("\nNot found tweets created by user\n");}
+            print_app_msg!("\nNot found tweets created by user\n");}
     }
     return result;
 }

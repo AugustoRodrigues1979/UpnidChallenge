@@ -54,7 +54,7 @@ static mut mainTypeDataBase : TypeDataBase = TypeDataBase:: DataBaseInvalid;
 // public methods
 pub fn create_database(typeDataBase : TypeDataBase) {
 	//TODO: Code here all initialization for mysql
-	println!("\nConnecting remote database. Please Wait.....\n");
+	print_app_msg!("\nConnecting remote database. Please Wait.....\n");
 
 	unsafe {
 		mainTypeDataBase = typeDataBase;
@@ -62,7 +62,7 @@ pub fn create_database(typeDataBase : TypeDataBase) {
 
 	let pool = create_pool();
 	
-	println!("\nBegin creating default tables (if it's necessary).....\n");
+	print_app_msg!("\nBegin creating default tables (if it's necessary).....\n");
 	
 	pool.prep_exec(r"CREATE TABLE IF NOT EXISTS USER_TABLE (
 						user_id int PRIMARY KEY AUTO_INCREMENT,
@@ -110,7 +110,7 @@ pub fn clean_database(typeDataBase : TypeDataBase)
 
 	let pool = create_pool();
 	
-	println!("\nDrop all default tables (if it's necessary).....\n");
+	print_app_msg!("\nDrop all default tables (if it's necessary).....\n");
 	pool.prep_exec(r"SET FOREIGN_KEY_CHECKS=0",()).unwrap();
 
 	pool.prep_exec(r"DROP TABLE  IF EXISTS USER_TABLE",()).unwrap();
@@ -123,7 +123,7 @@ pub fn clean_database(typeDataBase : TypeDataBase)
 
 pub fn add_follower_user(follow_info : &FollowUserData) -> bool {	
 	let pool = create_pool();
-	println!("Updating follow register...");
+	print_app_msg!("Updating follow register...");
 
 	match  pool.prep_exec("INSERT INTO FOLLOW_TABLE(user_id_follower, 
 													user_id_followed,
@@ -135,8 +135,8 @@ pub fn add_follower_user(follow_info : &FollowUserData) -> bool {
 	{
 		Ok(_)    => true,
 		Err(error)   => {
-			println!("Error when inserting register : {}", error);
-			println!("Updating follow register...");
+			print_app_msg!("Error when inserting register : {}", error);
+			print_app_msg!("Updating follow register...");
 			
 
 			match pool.prep_exec("UPDATE FOLLOW_TABLE SET 
@@ -151,7 +151,7 @@ pub fn add_follower_user(follow_info : &FollowUserData) -> bool {
 			{
 				Ok(_) => true,
 				Err(_) => { 
-					println!("Error when updating register : {}", error);
+					print_app_msg!("Error when updating register : {}", error);
 					false
 				}
 			}
@@ -177,14 +177,14 @@ pub fn add_tweet_user( tweet_info : &mut TweetUserData) {
 	}
 	else
 	{
-		println!("\nInvalid User data for create user's tweet!\n");
+		print_app_msg!("\nInvalid User data for create user's tweet!\n");
 	}
 }
 
 pub fn add_user( user_info : &mut UserData) -> (bool, String) 
 {
 
-if search_user_login( &user_info.login) 
+	if search_user_login( &user_info.login) 
 	{
 		let mut warning_login : String = "Login ['".to_owned();
 		warning_login.push_str(&user_info.login);
@@ -247,7 +247,7 @@ fn get_one_tweet_user( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRe
 	stmt_str.push_str(&tweet_id.to_string());
 	stmt_str.push_str("'");
 
-	//println!("Statement query by user id with tweet_id:{}", stmt_str);
+	//print_app_msg!("Statement query by user id with tweet_id:{}", stmt_str);
 
 	let mut list_tweets = vec![];
 
@@ -255,7 +255,7 @@ fn get_one_tweet_user( user_id : i32, tweet_id : i32 ) -> (bool, Vec<TweetDataRe
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return (false, list_tweets);
         }
     }; 
@@ -282,7 +282,7 @@ pub fn get_any_tweet( tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 	stmt_str.push_str(&tweet_id.to_string());
 	stmt_str.push_str("'");
 
-	//println!("Statement query any tweet:{}", stmt_str);
+	//print_app_msg!("Statement query any tweet:{}", stmt_str);
 
 	let mut list_tweets = vec![];
 
@@ -290,7 +290,7 @@ pub fn get_any_tweet( tweet_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return (false, list_tweets);
         }
     };
@@ -318,13 +318,13 @@ pub fn get_user_id(login : String, password : String) -> (bool, i32, String)
 	stmt_str.push_str(&password);
 	stmt_str.push_str("'");
 
-	//println!("Statement get user id:{}", stmt_str);
+	//print_app_msg!("Statement get user id:{}", stmt_str);
 
 	let mut stmt = match pool.prepare(stmt_str)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return (false, 0, "".to_string());
         }
     };
@@ -347,13 +347,13 @@ pub fn get_user_by_id(user_id : String) -> (bool, String, String)
 	stmt_str.push_str(&user_id);
 	stmt_str.push_str("'");
 
-	println!("Statement get user by id:{}", stmt_str);
+	print_app_msg!("Statement get user by id:{}", stmt_str);
 
 	let mut stmt = match pool.prepare(stmt_str)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
 			return (false, "".to_string(), "".to_string());
         }
     };
@@ -376,7 +376,7 @@ fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 	stmt_str.push_str(&user_id.to_string());
 	stmt_str.push_str("'");
 
-	//println!("Statement query user id:{}", stmt_str);
+	//print_app_msg!("Statement query user id:{}", stmt_str);
 
 	let mut list_tweets = vec![];
 
@@ -384,7 +384,7 @@ fn get_tweets_by_user_id( user_id : i32 ) -> (bool, Vec<TweetDataRecord>)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return (false, list_tweets);
         }
     };
@@ -412,13 +412,13 @@ fn search_user_id( login : &String, password : &String ) -> (bool, i32)
 	stmt_str.push_str(password);
 	stmt_str.push_str("'");
 
-	//println!("Statement query user id:{}", stmt_str);
+	//print_app_msg!("Statement query user id:{}", stmt_str);
 
 	let mut stmt = match pool.prepare(stmt_str)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return (false, 0);
         }
     };
@@ -440,13 +440,13 @@ fn search_user_login( login : &String ) -> bool
 	stmt_str.push_str(login);
 	stmt_str.push_str("'");
 
-	//println!("Statement query user login:{}", stmt_str);
+	//print_app_msg!("Statement query user login:{}", stmt_str);
 
 	let mut stmt = match pool.prepare(stmt_str)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return false;
         }
     };
@@ -503,13 +503,13 @@ pub fn get_total_like_tweet( tweet_id : i32, liked : bool) -> (bool, i32)
 	if liked { stmt_str.push_str("' AND liked='1'");}
 	else     { stmt_str.push_str("' AND liked='0'");}
 
-	//println!("Statement get_total_like_tweet:{}", stmt_str);
+	//print_app_msg!("Statement get_total_like_tweet:{}", stmt_str);
 
 	let mut stmt = match pool.prepare(stmt_str)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return (false, 0);
         }
     };
@@ -536,13 +536,13 @@ fn search_like_tweet(user_id : i32, tweet_id : i32) -> bool
 	stmt_str.push_str(&tweet_id.to_string());
 	stmt_str.push_str("'");
 
-	//println!("Statement query like tweet:{}", stmt_str);
+	//print_app_msg!("Statement query like tweet:{}", stmt_str);
 
 	let mut stmt = match pool.prepare(stmt_str)
 	{
         Ok(stmt) => stmt,
         Err(e) => {
-            eprintln!("{}", e);
+            print_app_msg!("{}", e);
             return false;
         }
     };
@@ -637,7 +637,7 @@ fn update_like_tweet(status_like : bool, user_id : i32, tweet_id : i32) -> bool
 	}
 	
 
-	//println!("Statement update or insert like in LIKE_TABLE:{}", stmt_str);
+	//print_app_msg!("Statement update or insert like in LIKE_TABLE:{}", stmt_str);
 
 	pool.prep_exec(stmt_str, ()).unwrap();
 	
@@ -662,7 +662,7 @@ pub fn update_status_like_tweet(status_like : bool, user_id : i32, tweet_id : i3
 	                                                  user_id,
 					                                  tweet_id);
 
-	//println!("Statement query update like of tweet's user:{}", stmt_str);
+	//print_app_msg!("Statement query update like of tweet's user:{}", stmt_str);
 
 	pool.prep_exec(stmt_str,()).unwrap();
 }
